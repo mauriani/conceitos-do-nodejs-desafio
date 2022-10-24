@@ -53,15 +53,14 @@ app.get("/todos", checksExistsUserAccount, (request, response) => {
   return response.status(201).json(user.todos);
 });
 
-app.post("/todos", checksExistsUserAccount, (request, response) => {
+app.post("/todos", checksExistsUserAccount, async (request, response) => {
   // Complete aqui
   const { user } = request;
-
   const { title, deadline } = request.body;
 
   const newTodo = {
     id: uuidv4(),
-    title,
+    title: title,
     done: false,
     deadline: new Date(deadline),
     created_at: new Date(),
@@ -69,19 +68,60 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
 
   user.todos.push(newTodo);
 
-  return response.status(201).json(user.todos);
+  return response.status(201).json(newTodo);
 });
 
 app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
   // Complete aqui
+
+  const { user } = request;
+  const { title, deadline } = request.body;
+  const { id } = request.params;
+
+  const todo = user.todos.find((todo) => todo.id === id);
+
+  if (!todo) {
+    return response.status(404).json({ error: "Todo Not Found" });
+  }
+
+  todo.title = title;
+  todo.deadline = new Date(deadline);
+
+  return response.json(todo);
 });
 
 app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
   // Complete aqui
+
+  const { user } = request;
+  const { id } = request.params;
+
+  const todo = user.todos.find((todo) => todo.id === id);
+
+  if (!todo) {
+    return response.status(404).json({ error: "Todo Not Found" });
+  }
+
+  todo.done = true;
+
+  return response.json(todo);
 });
 
 app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
   // Complete aqui
+
+  const { user } = request;
+  const { id } = request.params;
+
+  const todoIndex = user.todos.findIndex((todo) => todo.id === id);
+
+  if (todoIndex === -1) {
+    return response.status(404).json({ error: "Todo Not Found" });
+  }
+
+  user.todos.splice(todoIndex, 1);
+
+  return response.status(204).send().json();
 });
 
 module.exports = app;
